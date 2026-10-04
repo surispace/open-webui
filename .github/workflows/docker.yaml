@@ -35,24 +35,6 @@ jobs:
             suffix: ""
             build_args: ""
             free_disk: false
-          - name: cuda
-            suffix: "-cuda"
-            build_args: "USE_CUDA=true"
-            free_disk: true
-          - name: cuda126
-            suffix: "-cuda126"
-            build_args: |
-              USE_CUDA=true
-              USE_CUDA_VER=cu126
-            free_disk: true
-          - name: ollama
-            suffix: "-ollama"
-            build_args: "USE_OLLAMA=true"
-            free_disk: false
-          - name: slim
-            suffix: "-slim"
-            build_args: "USE_SLIM=true"
-            free_disk: false
 
     steps:
       - name: Prepare environment
@@ -99,15 +81,8 @@ jobs:
         with:
           images: ${{ env.FULL_IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=tag
-            type=sha,prefix=git-
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            ${{ matrix.variant.suffix != '' && format('type=raw,enable={0},prefix=,suffix=,value={1}', github.ref == 'refs/heads/main', matrix.variant.name) || '' }}
-          flavor: |
-            latest=${{ github.ref == 'refs/heads/main' }}
-            ${{ matrix.variant.suffix != '' && format('suffix={0},onlatest=true', matrix.variant.suffix) || '' }}
+            type=raw,value=latest,enable={{github.ref == 'refs/heads/main'}}
 
       - name: Extract metadata for Docker cache
         id: cache-meta
@@ -165,14 +140,6 @@ jobs:
         variant:
           - name: main
             suffix: ""
-          - name: cuda
-            suffix: "-cuda"
-          - name: cuda126
-            suffix: "-cuda126"
-          - name: ollama
-            suffix: "-ollama"
-          - name: slim
-            suffix: "-slim"
 
     steps:
       - name: Prepare environment
@@ -220,15 +187,8 @@ jobs:
         with:
           images: ${{ env.FULL_IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=tag
-            type=sha,prefix=git-
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            ${{ matrix.variant.suffix != '' && format('type=raw,enable={0},prefix=,suffix=,value={1}', github.ref == 'refs/heads/main', matrix.variant.name) || '' }}
-          flavor: |
-            latest=${{ github.ref == 'refs/heads/main' }}
-            ${{ matrix.variant.suffix != '' && format('suffix={0},onlatest=true', matrix.variant.suffix) || '' }}
+            type=raw,value=latest,enable={{github.ref == 'refs/heads/main'}}
 
       - name: Create manifest list and push
         if: steps.check.outputs.skip != 'true'
@@ -253,14 +213,6 @@ jobs:
         include:
           - variant: main
             suffix: ""
-          - variant: cuda
-            suffix: "-cuda"
-          - variant: cuda126
-            suffix: "-cuda126"
-          - variant: ollama
-            suffix: "-ollama"
-          - variant: slim
-            suffix: "-slim"
 
     steps:
       - name: Prepare environment
@@ -293,12 +245,8 @@ jobs:
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION="${{ github.ref_name }}"
             VERSION="${VERSION#v}"
-            MAJOR_MINOR="${VERSION%.*}"
 
-            echo "tags<<EOF" >> $GITHUB_OUTPUT
-            echo "${VERSION}${SUFFIX}" >> $GITHUB_OUTPUT
-            echo "${MAJOR_MINOR}${SUFFIX}" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            echo "tags=${VERSION}${SUFFIX}" >> $GITHUB_OUTPUT
           else
             if [ -z "$SUFFIX" ]; then
               echo "tags=latest" >> $GITHUB_OUTPUT
