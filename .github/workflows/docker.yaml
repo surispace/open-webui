@@ -82,7 +82,7 @@ jobs:
           images: ${{ env.FULL_IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}}
-            type=raw,value=latest,enable={{github.ref == 'refs/heads/main'}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Extract metadata for Docker cache
         id: cache-meta
@@ -188,7 +188,7 @@ jobs:
           images: ${{ env.FULL_IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}}
-            type=raw,value=latest,enable={{github.ref == 'refs/heads/main'}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Create manifest list and push
         if: steps.check.outputs.skip != 'true'
@@ -324,17 +324,15 @@ jobs:
             const labels = ['release', 'docker'];
             for (const label of labels) {
               try {
-                await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, label });
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label,
+                  color: '0366d6',
+                  description: 'Docker image release notifications',
+                });
               } catch (err) {
-                if (err.status === 404) {
-                  await github.rest.issues.createLabel({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    name: label,
-                    color: '0366d6',
-                    description: 'Docker image release notifications',
-                  });
-                }
+                if (err.status !== 422) throw err; // ignore "already exists"
               }
             }
 
@@ -370,17 +368,15 @@ jobs:
 
             const label = 'failed-build';
             try {
-              await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, label });
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: label,
+                color: 'd73a4a',
+                description: 'Docker build failure notifications',
+              });
             } catch (err) {
-              if (err.status === 404) {
-                await github.rest.issues.createLabel({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  name: label,
-                  color: 'd73a4a',
-                  description: 'Docker build failure notifications',
-                });
-              }
+              if (err.status !== 422) throw err; // ignore "already exists"
             }
 
             await github.rest.issues.create({
