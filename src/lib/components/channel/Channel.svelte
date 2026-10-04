@@ -326,10 +326,10 @@
 					} else {
 						return e.name;
 					}
-				}, '')} / Open WebUI</title
+				}, '')} / GPT</title
 		>
 	{:else}
-		<title>#{channel?.name ?? 'Channel'} / Open WebUI</title>
+		<title>#{channel?.name ?? 'Channel'} / GPT</title>
 	{/if}
 </svelte:head>
 

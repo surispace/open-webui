@@ -346,7 +346,7 @@ def _notification_webhook_content(event: Any) -> tuple[str, str, dict[str, Any],
 # LICENSE covers this Open WebUI notification identifier.
 # Do not alter, remove, obscure, or replace it except as LICENSE permits:
 # https://docs.openwebui.com/license.
-async def test_target(user_id: str, target_id: str, app_name: str = 'Open WebUI') -> dict[str, Any]:
+async def test_target(user_id: str, target_id: str, app_name: str = 'GPT') -> dict[str, Any]:
     notifications = await _load_notifications(user_id)
     target = _find_target(notifications, target_id)
     if not target:
